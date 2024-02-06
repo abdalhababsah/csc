@@ -1,42 +1,32 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $students = User::where('role', 'student')->paginate(10);
-            return view('admin.students.students', compact('students'));
+        if ($request->ajax()) {
+            $students = User::where('role', 'student')->get();
+            return response()->json($students);
+        }
+        return view('admin.students.students');
     }
-    public function show()
-    {
-        $students = User::where('role', 'student')->paginate(10);
-            return view('admin.students.students', compact('students'));
-    }
-
 
     public function store(Request $request)
     {
         $student = new User();
         $student->name = $request->name;
         $student->email = $request->email;
-        $student->password = bcrypt($request->password);
+        $student->password = Hash::make($request->password); // Use Hash facade
         $student->role = 'student';
-        $student->activated = 1; 
+        $student->activated = $request->activated ?? 0; // Set default as 0 if not provided
         $student->save();
 
         return response()->json($student);
-    }
-
-    public function edit($id)
-    {
-        $student = User::find($id);
-        return view('admin.students.edit', compact('student'));
     }
 
     public function update(Request $request, $id)
@@ -52,5 +42,14 @@ class StudentController extends Controller
         User::destroy($id);
         return response()->json(['success' => 'Student deleted successfully']);
     }
-    
+    public function show($id)
+{
+    $student = User::find($id);
+
+    if (!$student) {
+        return response()->json(['message' => 'Student not found'], 404);
+    }
+
+    return response()->json($student);
+}
 }
