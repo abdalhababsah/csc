@@ -18,8 +18,10 @@ return new class extends Migration
             $table->integer('mark')->nullable();
             $table->integer('mid_mark')->nullable();
             $table->timestamps();  
-            $table->foreign('student_id')->references('id')->on('users');
-            $table->foreign('subject_id')->references('id')->on('subjects');
+            $table->foreign('student_id')->references('id')->on('users') ->onDelete('cascade')
+            ->onUpdate('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects') ->onDelete('cascade')
+            ->onUpdate('cascade');
         });
     }
 

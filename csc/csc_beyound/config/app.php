@@ -167,7 +167,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         Yajra\DataTables\DataTablesServiceProvider::class,
 
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),

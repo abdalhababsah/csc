@@ -6,8 +6,10 @@ use App\Http\Controllers\DashBoardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\studentToClassController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\StudentDashboardController;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,42 +22,32 @@ use App\Http\Controllers\StudentDashboardController;
 */
 
 Route::get('/', function () {
-    return view('welcome')
-    ->name('home');;
+    return view('welcome');
 });
+
 Route::get('/welcomestudent', function () {
     return view('welcomestudent');
 })->name('welcomestudent');
+
 
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
 Route::middleware('auth')->group(function () {
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 
 
-// Route::resource('admin/dashboard', DashBoardController::class);
-// Route::resource('admin/dashboard/students', StudentController::class);
-// Route::resource('admin/dashboard/subjects', SubjectController::class);
-// Route::get('/admin/dashboard/studenttoclass/{subjectId}', [studentToClassController::class, 'index'])->name('studenttoclass.index');
-// Route::post('/admin/dashboard/studenttoclass/update-marks', [StudentToClassController::class, 'updateMarks'])->name('studenttoclass.updateMarks');
 
 
-
-    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])
-    ->name('student.dashboard');
-
-///////////////////////////////////
 
 // DashBoardController Routes
-Route::get('/admin/dashboard/index', [DashBoardController::class, 'index'])->name('admin.dashboard.index');
+Route::get('/admin/dashboard', [DashBoardController::class, 'index'])->name('admin.dashboard.index');
 
 // StudentController Routes
 Route::get('/admin/dashboard/students/show', [StudentController::class, 'index'])->name('admin.students.index');
@@ -65,19 +57,31 @@ Route::get('/admin/dashboard/students/{student}/edit', [StudentController::class
 Route::put('/admin/dashboard/students/update/{student}', [StudentController::class, 'update'])->name('admin.students.update');
 Route::delete('/admin/dashboard/students/delet/{student}', [StudentController::class, 'destroy'])->name('admin.students.destroy');
 
+// chats 
+Route::post('/send-message', [ChatController::class, 'sendMessage'])->name('send.message');
+Route::post('/set-receiver', [ChatController::class, 'setReceiver'])->name('set.receiver');
+Route::get('/fetch-users', [ChatController::class, 'fetchUsers'])->name('fetch.users');
+Route::get('/fetch-chat-history/{receiverId}', [ChatController::class, 'fetchChatHistory'])->name('fetch.chat.history');
 // SubjectController Routes
 Route::get('/admin/dashboard/subjects/show', [SubjectController::class, 'index'])->name('admin.subjects.index');
 Route::post('/admin/dashboard/subjects/store', [SubjectController::class, 'store'])->name('admin.subjects.store');
 Route::get('/admin/dashboard/subjects/{subject}/edit', [SubjectController::class, 'edit'])->name('admin.subjects.edit');
 Route::put('/admin/dashboard/subjects/update/{subject}', [SubjectController::class, 'update'])->name('admin.subjects.update');
-Route::delete('/admin/dashboard/subjects/delet/{subject}', [SubjectController::class, 'destroy'])->name('admin.subjects.destroy');
+Route::delete('/admin/dashboard/subjects/delete/{subject}', [SubjectController::class, 'destroy'])->name('admin.subjects.destroy');
+
+
+
+Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])
+->name('student.dashboard');
 
 // studentToClassController Routes
 Route::get('/admin/dashboard/studenttoclass/show/{subjectId}', [StudentToClassController::class, 'index'])->name('admin.studenttoclass.index');
 Route::post('/admin/dashboard/studenttoclass/update-marks', [StudentToClassController::class, 'update'])->name('admin.studenttoclass.updateMarks');
 
-require __DIR__.'/auth.php';
-});
+Route::get('/chat', function () {
+    return view('admin.chat.chatview');
+})->name('chat');
+
 
 
 
@@ -86,3 +90,6 @@ Route::post('/students', [StudentController::class, 'store'])->name('students.st
 Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
 Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
 Route::get('/students/{id}', [StudentController::class, 'show'])->name('students.show');
+
+
+require __DIR__.'/auth.php';

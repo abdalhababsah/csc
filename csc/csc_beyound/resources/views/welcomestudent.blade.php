@@ -8,7 +8,7 @@
 <body>
 
 @if(session('success'))
-    <div class="alert alert-success">
+    <div style="color: red ; font-size:30px" class="alert alert-success">
         {{ session('success') }}
     </div>
 @endif

@@ -1,14 +1,14 @@
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
-
+    @if (session('warning'))
+    <div style="background-color: #FFF3CD; border-left: 4px solid #FFEEBA; color: #856404; padding: 1rem; margin-bottom: 1rem;" role="alert">
+        <p>{{ session('warning') }}</p>
+    </div>
+@endif
     <form method="POST" action="{{ route('login') }}">
         @csrf
-        @if(session('warning'))
-        <div style="color: red" class="  alert alert-warning"> 
-            {{ session('warning') }} 
-        </div>
-    @endif
+
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />

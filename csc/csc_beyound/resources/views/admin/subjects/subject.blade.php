@@ -20,39 +20,13 @@
                             <th>Description</th>
                             <th>Assigned Students</th>
                             <th>Status</th>
-
                             <th>Created At</th>
                             <th>Action</th>
                             <th>View</th>
                         </tr>
                     </thead>
                     <tbody id="subjectsTableBody">
-                        @foreach($subjects as $subject)
-                            <tr>
-                                <td>{{ $subject->sub_name }}</td>
-                                <td>{{ $subject->body }}</td>
-                                <td>
-                                    @if($subject->students->isEmpty())
-                                        No students assigned
-                                    @else
-                                        {{ $subject->students->count() }} student(s)
-                                        @foreach($subject->students as $student)
-                                            {{ $student->name }}<br>
-                                        @endforeach
-                                    @endif
-                                </td>
-                                <td>{{ $subject->status }}</td>
-                                <td>{{ $subject->created_at }}</td>
-                                <td>
-                                    <button class="btn btn-primary editSubjectButton" data-id="{{ $subject->id }}" data-toggle="modal" data-target="#editSubjectModal">Edit</button>
-                                    <button class="btn btn-danger deleteSubjectButton" data-id="{{ $subject->id }}">Delete</button>
-                                </td>
-                                <td>
-                                    <!-- View Subject Button or Link -->
-                                    <a href="{{ route('admin.studenttoclass.index', ['subjectId' => $subject->id]) }}" class="btn btn-info">View</a>
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Subjects will be loaded here by AJAX -->
                     </tbody>
                 </table>
             </div>
@@ -61,10 +35,12 @@
 </div>
 
 <!-- Add Subject Modal -->
+<!-- Add Subject Modal -->
 <div class="modal fade" id="addSubjectModal" tabindex="-1" role="dialog" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="addSubjectForm">
+                @csrf <!-- Add CSRF token -->
                 <div class="modal-header">
                     <h5 class="modal-title" id="addSubjectModalLabel">Add Subject</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -90,17 +66,21 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                    <button type="submit" class="btn btn-primary" id="addSubjectButton">Add Subject</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Edit Subject Modal -->
 <!-- Edit Subject Modal -->
 <div class="modal fade" id="editSubjectModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="editSubjectForm">
+                @csrf <!-- Add CSRF token -->
+                @method('PUT') <!-- Add method spoofing for PUT request -->
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Subject</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -125,12 +105,9 @@
                     <div class="form-group">
                         <label>Students:</label>
                         <select name="student_ids[]" class="form-control" id="editSubjectStudents" multiple>
-                            @foreach($allStudents as $student)
-                                <option value="{{ $student->id }}">{{ $student->name }}</option>
-                            @endforeach
+                            <!-- Students options will be loaded dynamically via AJAX -->
                         </select>
                     </div>
-                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -140,117 +117,143 @@
         </div>
     </div>
 </div>
+
 <script>
-$(document).ready(function() {
-    // Add subject
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    $('.editSubjectButton').click(function() {
-    var subjectId = $(this).data('id');
+
+// Function to fetch subjects data via AJAX and update the table
+// Function to fetch subjects data via AJAX and update the table
+function fetchSubjectsAndUpdateTable() {
     $.ajax({
         type: 'GET',
-        url: '/admin/dashboard/subjects/' + subjectId + '/edit',
-        success: function(data) {
-            $('#editSubjectId').val(data.id);
-            $('#editSubjectName').val(data.sub_name);
-            $('#editSubjectDescription').val(data.body);
-            $('#editSubjectStatus').val(data.status);
-
-            $('#editSubjectStudents').val([]); 
-
-            var assignedStudents = data.students; // Assuming this is how you get the student IDs
-            $('#editSubjectStudents').val(assignedStudents).trigger('change');
-
-            $('#editSubjectModal').modal('show');
-        },
-        error: function() {
-            alert('Could not retrieve subject details');
-        }
-    });
-});
-
-
-    $('#addSubjectForm').submit(function(e) {
-        e.preventDefault();
-        $.ajax({
-            type: 'POST',
-            url: '/admin/dashboard/subjects', // Adjust this URL to your project's requirements
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#addSubjectModal').modal('hide');
-                location.reload(); // Reload the page to show the new subject
-            },
-            error: function(error) {
-                console.log(error);
-                // Handle error
-            }
-        });
-    });
-    $('#editSubjectForm').submit(function(e) {
-    e.preventDefault(); 
-
-    var subjectId = $('input[name=id]').val(); 
-
-    $.ajax({
-        type: 'PUT', 
-        url: '/admin/dashboard/subjects/' + subjectId, 
-        data: $(this).serialize(), 
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') 
-        },
+        url: '{{ route('admin.subjects.index') }}', 
+        dataType: 'json',
         success: function(response) {
-            $('#editSubjectModal').modal('hide');
-            location.reload(); 
+            console.log(response); // Log the received data
+            
+            // Clear the existing table body
+            $('#subjectsTableBody').empty();
+
+            // Iterate through each subject in the response
+            response.subjects.forEach(function(subject) {
+                // Generate HTML for students assigned to the subject
+                var studentsHtml = subject.students.map(function(student) {
+                    return student.name + '<br>';
+                }).join('');
+
+                // Append a new row to the table with subject details
+                $('#subjectsTableBody').append(`
+                    <tr id="subjectRow_${subject.id}">
+                        <td>${subject.sub_name}</td>
+                        <td>${subject.body || ''}</td>
+                        <td>${studentsHtml || 'No students assigned'}</td>
+                        <td>${subject.status}</td>
+                        <td>${subject.created_at}</td>
+                        <td>
+                            <button class="btn btn-primary editSubjectButton" data-id="${subject.id}" data-toggle="modal" data-target="#editSubjectModal">Edit</button>
+                            <button class="btn btn-danger deleteSubjectButton" data-id="${subject.id}">Delete</button>
+                        </td>
+                        <td>
+                            <a href="/admin/dashboard/studenttoclass/show/${subject.id}" class="btn btn-info">View</a>
+                        </td>
+                    </tr>
+                `);
+            });
         },
         error: function(error) {
             console.log(error);
-            alert('Error updating student');
+            alert('Error fetching subjects');
+        }
+    });
+}
+$(document).ready(function() {
+    fetchSubjectsAndUpdateTable(); 
+
+    $('#addSubjectForm').on('submit', function(e) {
+    e.preventDefault();
+    var formData = $(this).serialize();
+    $.ajax({
+        type: 'POST',
+        url: '/admin/dashboard/subjects/store',
+        data: formData,
+        success: function(subject) {
+            $('#addSubjectModal').modal('hide');
+            fetchSubjectsAndUpdateTable(); 
+        },
+        error: function(error) {
+            alert('Error adding subject');
         }
     });
 });
 
 
-    // Update subject
-    $('#editSubjectForm').submit(function(e) {
-        e.preventDefault();
-        var subjectId = $('input[name=id]').val();
+    $(document).on('click', '.deleteSubjectButton', function() {
+    var subjectId = $(this).data('id');
+    if (confirm("Are you sure you want to delete this subject?")) {
         $.ajax({
-            type: 'POST',
-            url: '/admin/dashboard/subjects/update/' + subjectId,
-            data: $(this).serialize(),
+            type: 'POST', 
+            url: '/admin/dashboard/subjects/delete/' + subjectId, 
+            data: {
+                _method: 'DELETE', 
+                _token: '{{ csrf_token() }}' 
+            },
             success: function(response) {
-                $('#editSubjectModal').modal('hide');
+                alert('Subject deleted successfully');
+                fetchSubjectsAndUpdateTable(); 
             },
             error: function(error) {
                 console.log(error);
+                alert('Error deleting subject');
             }
         });
-    });
+    }
+});
 
 
-  
-
-    // Delete subject
-    $('.deleteSubjectButton').click(function() {
-        var subjectId = $(this).data('id');
-        if (confirm("Are you sure you want to delete this subject?")) {
-            $.ajax({
-                type: 'DELETE',
-                url: '/admin/dashboard/subjects/' + subjectId, 
-                success: function(response) {
-                    alert('Subject deleted successfully');
-                    location.reload();
-                },
-                error: function(error) {
-                    console.log(error);
-                    alert('Error deleting subject');
-                }
+// Event handler for opening the edit subject modal and populating it with data
+$(document).on('click', '.editSubjectButton', function() {
+    var subjectId = $(this).data('id');
+    $.ajax({  
+        url: '/admin/dashboard/subjects/' + subjectId + '/edit',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $('#editSubjectId').val(data.subject.id);
+            $('#editSubjectName').val(data.subject.sub_name);
+            $('#editSubjectDescription').val(data.subject.body);
+            $('#editSubjectStatus').val(data.subject.status);
+            
+            $('#editSubjectStudents').empty();
+            
+            data.allStudents.forEach(function(student) {
+                $('#editSubjectStudents').append(`<option value="${student.id}">${student.name}</option>`);
             });
+            
+            $('#editSubjectModal').modal('show');
         }
     });
+});
+
+
+    // Submitting the edited subject
+    $('#editSubjectForm').on('submit', function(e) {
+    e.preventDefault();
+    var subjectId = $('#editSubjectId').val();
+    var formData = $(this).serialize();
+    $.ajax({
+        type: 'PUT',
+        url: '/admin/dashboard/subjects/update/' + subjectId, // Update URL to include the subject ID parameter
+        data: formData,
+        success: function(updatedSubject) {
+            $('#editSubjectModal').modal('hide');
+            fetchSubjectsAndUpdateTable(); // Refresh table after updating subject
+        },
+        error: function(error) {
+            console.log(error);
+            alert('Error updating subject');
+        }
+    });
+});
+
 });
 
 

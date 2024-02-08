@@ -21,9 +21,9 @@ class StudentController extends Controller
         $student = new User();
         $student->name = $request->name;
         $student->email = $request->email;
-        $student->password = Hash::make($request->password); // Use Hash facade
+        $student->password = Hash::make($request->password); 
         $student->role = 'student';
-        $student->activated = $request->activated ?? 0; // Set default as 0 if not provided
+        $student->activated = $request->activated ?? 0; 
         $student->save();
 
         return response()->json($student);

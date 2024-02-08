@@ -110,7 +110,11 @@
             <span>Log Out</span>
         </a>
     </li>
-
+    <li class="nav-item">
+        <a class="nav-link" href="{{route('chat')}}">
+            <i class="fas fa-fw fa-table"></i>
+            <span>Chat  </span></a>
+    </li>
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
