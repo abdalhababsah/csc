@@ -15,6 +15,11 @@ class Subject extends Model
         'status',
     ];
 
+    public function messages()
+    {
+        return $this->hasMany(Chat::class, 'subject_id');
+    }
+
     public function students()
     {
         return $this->belongsToMany(User::class, 'student_subject', 'subject_id', 'student_id')

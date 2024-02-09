@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Chat;
-use App\Events\MessageSent;
+use App\Events\PrivateMessageSent;
 class ChatController extends Controller
 {
     public function sendMessage(Request $request)
@@ -20,10 +20,12 @@ class ChatController extends Controller
             'message' => $messageText,
         ]);
     
-        broadcast(new MessageSent($chatMessage))->toOthers();
+        $receiver = User::find($receiverId); 
+        event(new PrivateMessageSent($receiver, $messageText)); 
     
         return response()->json(['message' => 'Message sent successfully']);
     }
+    
     
     
 
@@ -33,18 +35,31 @@ public function setReceiver(Request $request)
     return response()->json(['message' => 'Receiver ID set successfully']);
 }
 
-public function fetchUsers(Request $request)
+public function chatView($subjectId)
 {
-    $loggedInUser = auth()->user();
-    
-    if ($loggedInUser->role === 'teacher') {
-        $users = User::where('role', 'student')->where('id', '!=', $loggedInUser->id)->get();
-    } else {
-        $users = User::where('role', 'teacher')->where('id', '!=', $loggedInUser->id)->get();
-    }
-    
+    return view('admin.chat.chatview', compact('subjectId'));
+}
+
+public function fetchUsers($subjectId)
+{
+    $loggedInUserId = auth()->id();
+
+    $students = User::whereHas('subjects', function ($query) use ($subjectId) { // Corrected method name here
+                    $query->where('subject_id', $subjectId);
+                })
+                ->where('role', '=', 'student')
+                ->where('id', '!=', $loggedInUserId)
+                ->get();
+
+    $teachers = User::where('role', 'teacher')
+                    ->where('id', '!=', $loggedInUserId)
+                    ->get();
+
+    $users = $students->merge($teachers);
+
     return response()->json(['users' => $users]);
 }
+
 
 
 public function fetchChatHistory($receiverId)

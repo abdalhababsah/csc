@@ -12,6 +12,11 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        '/groupchat/*',
+        '/chat/*',
+        '/send-message',
+        '/set-receiver',
+        '/fetch-users/*',
+        '/fetch-chat-history/*',
     ];
 }

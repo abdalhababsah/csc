@@ -23,6 +23,7 @@
                             <th>Created At</th>
                             <th>Action</th>
                             <th>View</th>
+                            <th>Subject Chat</th>
                         </tr>
                     </thead>
                     <tbody id="subjectsTableBody">
@@ -74,7 +75,6 @@
 </div>
 
 <!-- Edit Subject Modal -->
-<!-- Edit Subject Modal -->
 <div class="modal fade" id="editSubjectModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -121,7 +121,7 @@
 <script>
 
 // Function to fetch subjects data via AJAX and update the table
-// Function to fetch subjects data via AJAX and update the table
+var logedinId = "{{ Auth::user()->id }}";
 function fetchSubjectsAndUpdateTable() {
     $.ajax({
         type: 'GET',
@@ -149,12 +149,17 @@ function fetchSubjectsAndUpdateTable() {
                         <td>${subject.status}</td>
                         <td>${subject.created_at}</td>
                         <td>
-                            <button class="btn btn-primary editSubjectButton" data-id="${subject.id}" data-toggle="modal" data-target="#editSubjectModal">Edit</button>
+                            <button class="btn my-2 btn-primary editSubjectButton" data-id="${subject.id}" data-toggle="modal" data-target="#editSubjectModal">Edit</button>
                             <button class="btn btn-danger deleteSubjectButton" data-id="${subject.id}">Delete</button>
                         </td>
                         <td>
                             <a href="/admin/dashboard/studenttoclass/show/${subject.id}" class="btn btn-info">View</a>
                         </td>
+                        <td>
+                            <a href="/groupchat/${subject.id}" class=" btn btn-primary">Public</a>
+                            <a href="/chat/${subject.id}" class="btn my-2 btn-warning">Private</a>
+                        </td>
+                        
                     </tr>
                 `);
             });
@@ -232,9 +237,6 @@ $(document).on('click', '.editSubjectButton', function() {
         }
     });
 });
-
-
-    // Submitting the edited subject
     $('#editSubjectForm').on('submit', function(e) {
     e.preventDefault();
     var subjectId = $('#editSubjectId').val();

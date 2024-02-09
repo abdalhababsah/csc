@@ -11,21 +11,21 @@ use Illuminate\Http\Response;
 class SubjectController extends Controller
 {
  
-public function index(Request $request)
-{
-    $subjects = Subject::with('students')->get();
-    $allStudents = User::where('role', 'student')->get();
-
-    if ($request->ajax()) {
-        return response()->json([
-            'subjects' => $subjects,
-            'allStudents' => $allStudents,
-        ]);
-    } else {
-        return view('admin.subjects.subject');
+    public function index(Request $request)
+    {
+        $subjects = Subject::with('students')->get();
+        $allStudents = User::where('role', 'student')->where('activated', 1)->get();
+    
+        if ($request->ajax()) {
+            return response()->json([
+                'subjects' => $subjects,
+                'allStudents' => $allStudents,
+            ]);
+        } else {
+            return view('admin.subjects.subject');
+        }
     }
-}
-
+    
     public function store(Request $request)
     {
         $rules = [
@@ -34,7 +34,6 @@ public function index(Request $request)
             'status' => 'required|in:Active,Inactive',
         ];
 
-        // Validate the incoming request data
         $validated = $request->validate($rules);
 
         $subject = Subject::create($validated);
@@ -46,7 +45,7 @@ public function index(Request $request)
     public function edit($id)
 {
     $subject = Subject::with('students')->find($id);
-    $allStudents = User::where('role', 'student')->get();
+    $allStudents = User::where('role', 'student')->where('activated', 1)->get();
 
     if ($subject) {
         return response()->json([

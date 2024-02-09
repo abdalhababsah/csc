@@ -2,6 +2,7 @@
 namespace App\Events;
 
 use App\Models\Chat;
+use App\Models\Subject;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -14,27 +15,34 @@ class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
-
+    public Subject $subject;
+    public string  $message;
+    public string $senderName;
     /**
      * Create a new event instance.
      *
      * @param  Chat  $message
      * @return void
      */
-    public function __construct(Chat $message)
+    public function __construct(string $message, Subject $subject ,string $senderName)
     {
         $this->message = $message;
-    }
+        $this->subject = $subject;
+        $this->senderName = $senderName;
 
-    /**
+    }
+    /*
      * Get the channels the event should broadcast on.
      *
      * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('chat.'.$this->message->receiver_id);
+        return new Channel('public-chat-channel');
+    }
+    public function broadcastAs()
+    {
+        return 'sendMessage';
     }
 }
 

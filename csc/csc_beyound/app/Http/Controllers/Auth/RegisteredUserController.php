@@ -47,7 +47,7 @@ class RegisteredUserController extends Controller
     
         if ($user) {
             // If user was successfully created, redirect with success message
-            return redirect()->route('welcomestudent')->with('success', 'Your account is waiting for activation from the teacher. Thank you for registering!');
+            return redirect()->route('welcome')->with('success', 'Your account is waiting for activation from the teacher. Thank you for registering!');
         } else {
             // If user was not created, redirect back with an error message
             // This is just a fallback, as create() method normally throws an exception if it fails

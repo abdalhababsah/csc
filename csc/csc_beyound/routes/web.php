@@ -7,6 +7,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\studentToClassController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\GroupChatController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -23,7 +24,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 Route::get('/welcomestudent', function () {
     return view('welcomestudent');
@@ -58,10 +59,11 @@ Route::put('/admin/dashboard/students/update/{student}', [StudentController::cla
 Route::delete('/admin/dashboard/students/delet/{student}', [StudentController::class, 'destroy'])->name('admin.students.destroy');
 
 // chats 
-Route::post('/send-message', [ChatController::class, 'sendMessage'])->name('send.message');
-Route::post('/set-receiver', [ChatController::class, 'setReceiver'])->name('set.receiver');
-Route::get('/fetch-users', [ChatController::class, 'fetchUsers'])->name('fetch.users');
-Route::get('/fetch-chat-history/{receiverId}', [ChatController::class, 'fetchChatHistory'])->name('fetch.chat.history');
+Route::post('/send-private-message', [ChatController::class, 'sendMessage'])->name('send.private.message');
+Route::post('/set-private-receiver', [ChatController::class, 'setReceiver'])->name('set.private.receiver');
+Route::get('/fetch-private-users/{userId}', [ChatController::class, 'fetchUsers'])->name('fetch.private.users');
+Route::get('/fetch-private-chat-history/{receiverId}', [ChatController::class, 'fetchChatHistory'])->name('fetch.private.chat.history');
+
 // SubjectController Routes
 Route::get('/admin/dashboard/subjects/show', [SubjectController::class, 'index'])->name('admin.subjects.index');
 Route::post('/admin/dashboard/subjects/store', [SubjectController::class, 'store'])->name('admin.subjects.store');
@@ -78,9 +80,8 @@ Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])
 Route::get('/admin/dashboard/studenttoclass/show/{subjectId}', [StudentToClassController::class, 'index'])->name('admin.studenttoclass.index');
 Route::post('/admin/dashboard/studenttoclass/update-marks', [StudentToClassController::class, 'update'])->name('admin.studenttoclass.updateMarks');
 
-Route::get('/chat', function () {
-    return view('admin.chat.chatview');
-})->name('chat');
+Route::get('/chat/{subjectId}', [ChatController::class, 'chatView'])->name('chat');
+
 
 
 
@@ -91,5 +92,8 @@ Route::put('/students/{id}', [StudentController::class, 'update'])->name('studen
 Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
 Route::get('/students/{id}', [StudentController::class, 'show'])->name('students.show');
 
+
+Route::get('/groupchat/{subjectId}', [GroupChatController::class, 'groupChatForm'])->middleware('auth');
+Route::post('/groupchat/{subjectId}', [GroupChatController::class, 'sendMessage'])->middleware('auth');
 
 require __DIR__.'/auth.php';
