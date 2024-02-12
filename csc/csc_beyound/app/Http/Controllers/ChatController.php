@@ -21,7 +21,8 @@ class ChatController extends Controller
         ]);
     
         $receiver = User::find($receiverId); 
-        event(new PrivateMessageSent($receiver, $messageText)); 
+        // dd($receiver);
+        event(new PrivateMessageSent($receiver, $messageText));
     
         return response()->json(['message' => 'Message sent successfully']);
     }
@@ -43,22 +44,44 @@ public function chatView($subjectId)
 public function fetchUsers($subjectId)
 {
     $loggedInUserId = auth()->id();
+    $loggedInUserRole = auth()->user()->role; 
 
-    $students = User::whereHas('subjects', function ($query) use ($subjectId) { // Corrected method name here
-                    $query->where('subject_id', $subjectId);
-                })
-                ->where('role', '=', 'student')
-                ->where('id', '!=', $loggedInUserId)
-                ->get();
+    $users = collect();
 
-    $teachers = User::where('role', 'teacher')
+    if ($loggedInUserRole == 'student') {
+        // $students = User::whereHas('subjects', function ($query) use ($subjectId) {
+        //                 $query->where('subject_id', $subjectId);
+        //             })
+        //             ->where('role', '=', 'student')
+        // ->where('id', '!=', $loggedInUserId)
+
+                    // ->get();
+                    $students = User::whereHas('subjects', function ($query) use ($subjectId) {
+                        $query->where('subject_id', $subjectId);
+                    })
+                    ->where('role', '=', 'student')
                     ->where('id', '!=', $loggedInUserId)
                     ->get();
 
-    $users = $students->merge($teachers);
+        $teachers = User::where('role', '=', 'teacher')->get(); 
 
+        $users = $students->merge($teachers);
+    } else if ($loggedInUserRole == 'teacher') {
+        $students = User::whereHas('subjects', function ($query) use ($subjectId) {
+                        $query->where('subject_id', $subjectId);
+                    })
+                    ->where('role', '=', 'student')
+                    ->get();
+
+        $teachers = User::where('role', '=', 'teacher')
+                        ->where('id', '!=', $loggedInUserId)
+                        ->get();
+
+        $users = $students->merge($teachers);
+    }
     return response()->json(['users' => $users]);
 }
+
 
 
 

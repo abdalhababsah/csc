@@ -47,6 +47,7 @@ class GroupChatController extends Controller
         $chatMessage->message = $messageText;
         $chatMessage->save();
         $senderName = Auth::user()->name;
+        
         event(new MessageSent($messageText, $subject, $senderName));
     
         return response()->json(['message' => 'Message sent successfully'], 200);

@@ -44,19 +44,9 @@ Route::middleware('auth')->group(function () {
 
 
 
-
-
-
 // DashBoardController Routes
 Route::get('/admin/dashboard', [DashBoardController::class, 'index'])->name('admin.dashboard.index');
 
-// StudentController Routes
-Route::get('/admin/dashboard/students/show', [StudentController::class, 'index'])->name('admin.students.index');
-Route::get('/admin/dashboard/students/{student}', [StudentController::class, 'show'])->name('admin.students.show');
-Route::post('/admin/dashboard/students/store', [StudentController::class, 'store'])->name('admin.students.store');
-Route::get('/admin/dashboard/students/{student}/edit', [StudentController::class, 'edit'])->name('admin.students.edit');
-Route::put('/admin/dashboard/students/update/{student}', [StudentController::class, 'update'])->name('admin.students.update');
-Route::delete('/admin/dashboard/students/delet/{student}', [StudentController::class, 'destroy'])->name('admin.students.destroy');
 
 // chats 
 Route::post('/send-private-message', [ChatController::class, 'sendMessage'])->name('send.private.message');
@@ -96,4 +86,95 @@ Route::get('/students/{id}', [StudentController::class, 'show'])->name('students
 Route::get('/groupchat/{subjectId}', [GroupChatController::class, 'groupChatForm'])->middleware('auth');
 Route::post('/groupchat/{subjectId}', [GroupChatController::class, 'sendMessage'])->middleware('auth');
 
+
+
+
+
 require __DIR__.'/auth.php';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// StudentController Routes
+Route::get('/admin/dashboard/students/show', [StudentController::class, 'index'])->name('admin.students.index');
+Route::get('/admin/dashboard/students/{student}', [StudentController::class, 'show'])->name('admin.students.show');
+Route::post('/admin/dashboard/students/store', [StudentController::class, 'store'])->name('admin.students.store');
+Route::get('/admin/dashboard/students/{student}/edit', [StudentController::class, 'edit'])->name('admin.students.edit');
+Route::put('/admin/dashboard/students/update/{student}', [StudentController::class, 'update'])->name('admin.students.update');
+Route::delete('/admin/dashboard/students/delet/{student}', [StudentController::class, 'destroy'])->name('admin.students.destroy');

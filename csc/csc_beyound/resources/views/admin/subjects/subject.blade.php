@@ -119,7 +119,7 @@
 </div>
 
 <script>
-
+$(document).ready(function() {
 // Function to fetch subjects data via AJAX and update the table
 var logedinId = "{{ Auth::user()->id }}";
 function fetchSubjectsAndUpdateTable() {
@@ -170,7 +170,7 @@ function fetchSubjectsAndUpdateTable() {
         }
     });
 }
-$(document).ready(function() {
+
     fetchSubjectsAndUpdateTable(); 
 
     $('#addSubjectForm').on('submit', function(e) {
